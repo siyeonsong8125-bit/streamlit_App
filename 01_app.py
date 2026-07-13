@@ -1,15 +1,19 @@
 import streamlit as st
+import requests
 import random
 
+# ------------------------
+# 기본 설정
+# ------------------------
 st.set_page_config(
     page_title="오늘 뭐 먹지? 🍽️",
     page_icon="🍜",
     layout="centered"
 )
 
-# -----------------------------
-# CSS
-# -----------------------------
+# ------------------------
+# CSS (귀여운 디자인)
+# ------------------------
 st.markdown("""
 <style>
 
@@ -21,44 +25,51 @@ st.markdown("""
     text-align:center;
     font-size:42px;
     font-weight:bold;
-    color:#ff6b81;
+    color:#ff69b4;
 }
 
 .sub{
     text-align:center;
-    color:#666;
+    color:#666666;
     font-size:18px;
 }
 
-.box{
+.result{
     background:white;
     border-radius:20px;
     padding:20px;
-    box-shadow:0px 5px 15px rgba(0,0,0,0.1);
+    box-shadow:0px 5px 15px rgba(0,0,0,0.15);
 }
 
 .food{
+    text-align:center;
     font-size:30px;
     color:#ff7f50;
     font-weight:bold;
-    text-align:center;
 }
 
 .cal{
     text-align:center;
-    color:#888;
     font-size:22px;
+    color:#666;
+}
+
+.weather{
+    text-align:center;
+    font-size:22px;
+    color:#3399ff;
+    font-weight:bold;
 }
 
 </style>
 """, unsafe_allow_html=True)
 
 st.markdown("<div class='title'>🍴 오늘 뭐 먹지?</div>", unsafe_allow_html=True)
-st.markdown("<div class='sub'>날씨에 맞는 메뉴를 추천해드려요 💕</div>", unsafe_allow_html=True)
+st.markdown("<div class='sub'>서울 날씨에 맞는 메뉴를 추천해드려요 💕</div>", unsafe_allow_html=True)
 
-# -----------------------------
-# 데이터
-# -----------------------------
+# ------------------------
+# 메뉴 데이터
+# ------------------------
 menus = {
 
     "☀️ 맑음":[
@@ -150,18 +161,60 @@ menus = {
             "img":"https://images.unsplash.com/photo-1579871494447-9811cf80d66c"
         }
     ]
-
 }
 
-weather = st.selectbox(
-    "🌈 오늘 날씨를 선택하세요!",
-    list(menus.keys())
+# ------------------------
+# 서울 날씨 가져오기
+# ------------------------
+API_KEY = st.secrets["OPENWEATHER_API_KEY"]
+
+url = f"https://api.openweathermap.org/data/2.5/weather?q=Seoul&appid={API_KEY}&units=metric&lang=kr"
+
+response = requests.get(url)
+
+if response.status_code != 200:
+    st.error("서울 날씨를 불러오지 못했습니다.")
+    st.stop()
+
+data = response.json()
+
+temp = data["main"]["temp"]
+weather_main = data["weather"][0]["main"]
+weather_desc = data["weather"][0]["description"]
+
+# ------------------------
+# 날씨 분류
+# ------------------------
+if weather_main == "Rain":
+    weather = "🌧️ 비"
+
+elif weather_main == "Snow":
+    weather = "❄️ 눈"
+
+elif temp >= 28:
+    weather = "🔥 더움"
+
+elif weather_main in ["Clouds", "Mist", "Fog", "Haze"]:
+    weather = "🌤️ 흐림"
+
+else:
+    weather = "☀️ 맑음"
+
+st.markdown(
+    f"<div class='weather'>📍 서울 현재 날씨 : {weather_desc} / {temp:.1f}℃</div>",
+    unsafe_allow_html=True
 )
 
-if st.button("🍀 메뉴 추천받기"):
+st.write("")
+
+# ------------------------
+# 메뉴 추천
+# ------------------------
+if st.button("🍀 오늘의 메뉴 추천"):
+
     food = random.choice(menus[weather])
 
-    st.markdown("<div class='box'>", unsafe_allow_html=True)
+    st.markdown("<div class='result'>", unsafe_allow_html=True)
 
     st.image(food["img"], use_container_width=True)
 
@@ -180,4 +233,4 @@ if st.button("🍀 메뉴 추천받기"):
     st.markdown("</div>", unsafe_allow_html=True)
 
 st.write("")
-st.caption("💗 Made with Streamlit")
+st.caption("💗 서울 실시간 날씨 기반 메뉴 추천 서비스")
