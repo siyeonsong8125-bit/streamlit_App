@@ -37,6 +37,24 @@ youtube = build(
 # =========================
 
 FONT_PATH = "youtube/NanumGothic.ttf"
+import os
+from matplotlib import font_manager
+
+# =========================
+# matplotlib 한글 폰트 설정
+# =========================
+
+if os.path.exists(FONT_PATH):
+
+    font_manager.fontManager.addfont(FONT_PATH)
+
+    font_name = font_manager.FontProperties(
+        fname=FONT_PATH
+    ).get_name()
+
+    plt.rcParams["font.family"] = font_name
+
+plt.rcParams["axes.unicode_minus"] = False
 
 # =========================
 # 영상 ID 추출
@@ -266,11 +284,24 @@ if st.button("분석 시작"):
         marker="o"
     )
 
-    ax.set_xlabel("시간")
-    ax.set_ylabel("댓글 수")
-    ax.set_title(
-        "시간대별 댓글 작성 추이"
-    )
+   font_prop = font_manager.FontProperties(
+    fname=FONT_PATH
+)
+
+ax.set_xlabel(
+    "시간",
+    fontproperties=font_prop
+)
+
+ax.set_ylabel(
+    "댓글 수",
+    fontproperties=font_prop
+)
+
+ax.set_title(
+    "시간대별 댓글 작성 추이",
+    fontproperties=font_prop
+)
 
     ax.grid(True)
 
@@ -296,11 +327,19 @@ if st.button("분석 시작"):
 
     fig2, ax2 = plt.subplots()
 
-    ax2.pie(
-        sentiment_count.values,
-        labels=sentiment_count.index,
-        autopct="%1.1f%%"
-    )
+   ax2.pie(
+    sentiment_count.values,
+    labels=sentiment_count.index,
+    autopct="%1.1f%%",
+    textprops={
+        "fontproperties": font_prop
+    }
+)
+
+ax2.set_title(
+    "댓글 감성 분석",
+    fontproperties=font_prop
+)
 
     st.pyplot(fig2)
 
