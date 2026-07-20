@@ -38,7 +38,7 @@ youtube = build(
 # 폰트 경로
 # =========================
 
-FONT_PATH = "NanumGothic.ttf"
+FONT_PATH = "youtube/NanumGothic.ttf"
 
 # =========================
 # 영상 ID 추출
