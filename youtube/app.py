@@ -1,11 +1,13 @@
 import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
+from matplotlib import font_manager
 from googleapiclient.discovery import build
 from wordcloud import WordCloud
 from collections import Counter
 from textblob import TextBlob
 import re
+import os
 
 # =========================
 # 페이지 설정
@@ -37,15 +39,8 @@ youtube = build(
 # =========================
 
 FONT_PATH = "youtube/NanumGothic.ttf"
-import os
-from matplotlib import font_manager
-
-# =========================
-# matplotlib 한글 폰트 설정
-# =========================
 
 if os.path.exists(FONT_PATH):
-
     font_manager.fontManager.addfont(FONT_PATH)
 
     font_name = font_manager.FontProperties(
@@ -195,9 +190,7 @@ def make_wordcloud(texts):
 # 입력
 # =========================
 
-url = st.text_input(
-    "유튜브 링크 입력"
-)
+url = st.text_input("유튜브 링크 입력")
 
 max_comments = st.slider(
     "분석할 댓글 수",
@@ -217,10 +210,7 @@ if st.button("분석 시작"):
 
     if not video_id:
 
-        st.error(
-            "올바른 유튜브 링크를 입력하세요."
-        )
-
+        st.error("올바른 유튜브 링크를 입력하세요.")
         st.stop()
 
     # =====================
@@ -243,40 +233,30 @@ if st.button("분석 시작"):
 
     if len(df) == 0:
 
-        st.error(
-            "댓글을 가져오지 못했습니다."
-        )
-
+        st.error("댓글을 가져오지 못했습니다.")
         st.stop()
 
-    st.success(
-        f"{len(df)}개 댓글 수집 완료"
+    st.success(f"{len(df)}개 댓글 수집 완료")
+
+    font_prop = font_manager.FontProperties(
+        fname=FONT_PATH
     )
 
     # =====================
     # 시간대 분석
     # =====================
 
-    st.subheader(
-        "📈 시간대별 댓글 작성 추이"
-    )
+    st.subheader("📈 시간대별 댓글 작성 추이")
 
-    df["time"] = pd.to_datetime(
-        df["time"]
-    )
+    df["time"] = pd.to_datetime(df["time"])
 
     hourly = (
-        df
-        .groupby(
-            df["time"].dt.hour
-        )
+        df.groupby(df["time"].dt.hour)
         .size()
         .reset_index(name="count")
     )
 
-    fig, ax = plt.subplots(
-        figsize=(10, 4)
-    )
+    fig, ax = plt.subplots(figsize=(10, 4))
 
     ax.plot(
         hourly["time"],
@@ -284,24 +264,20 @@ if st.button("분석 시작"):
         marker="o"
     )
 
-   font_prop = font_manager.FontProperties(
-    fname=FONT_PATH
-)
+    ax.set_xlabel(
+        "시간",
+        fontproperties=font_prop
+    )
 
-ax.set_xlabel(
-    "시간",
-    fontproperties=font_prop
-)
+    ax.set_ylabel(
+        "댓글 수",
+        fontproperties=font_prop
+    )
 
-ax.set_ylabel(
-    "댓글 수",
-    fontproperties=font_prop
-)
-
-ax.set_title(
-    "시간대별 댓글 작성 추이",
-    fontproperties=font_prop
-)
+    ax.set_title(
+        "시간대별 댓글 작성 추이",
+        fontproperties=font_prop
+    )
 
     ax.grid(True)
 
@@ -311,9 +287,7 @@ ax.set_title(
     # 감성 분석
     # =====================
 
-    st.subheader(
-        "😊 댓글 반응도 분석"
-    )
+    st.subheader("😊 댓글 반응도 분석")
 
     df["sentiment"] = (
         df["comment"]
@@ -327,19 +301,19 @@ ax.set_title(
 
     fig2, ax2 = plt.subplots()
 
-   ax2.pie(
-    sentiment_count.values,
-    labels=sentiment_count.index,
-    autopct="%1.1f%%",
-    textprops={
-        "fontproperties": font_prop
-    }
-)
+    ax2.pie(
+        sentiment_count.values,
+        labels=sentiment_count.index,
+        autopct="%1.1f%%",
+        textprops={
+            "fontproperties": font_prop
+        }
+    )
 
-ax2.set_title(
-    "댓글 감성 분석",
-    fontproperties=font_prop
-)
+    ax2.set_title(
+        "댓글 감성 분석",
+        fontproperties=font_prop
+    )
 
     st.pyplot(fig2)
 
@@ -347,39 +321,26 @@ ax2.set_title(
 
     col1.metric(
         "긍정",
-        sentiment_count.get(
-            "긍정",
-            0
-        )
+        sentiment_count.get("긍정", 0)
     )
 
     col2.metric(
         "중립",
-        sentiment_count.get(
-            "중립",
-            0
-        )
+        sentiment_count.get("중립", 0)
     )
 
     col3.metric(
         "부정",
-        sentiment_count.get(
-            "부정",
-            0
-        )
+        sentiment_count.get("부정", 0)
     )
 
     # =====================
     # 워드클라우드
     # =====================
 
-    st.subheader(
-        "☁️ 댓글 워드클라우드"
-    )
+    st.subheader("☁️ 댓글 워드클라우드")
 
-    wc = make_wordcloud(
-        df["comment"]
-    )
+    wc = make_wordcloud(df["comment"])
 
     if wc:
 
@@ -406,9 +367,7 @@ ax2.set_title(
     # TOP20 단어
     # =====================
 
-    st.subheader(
-        "🔍 자주 등장한 단어 TOP 20"
-    )
+    st.subheader("🔍 자주 등장한 단어 TOP 20")
 
     words = extract_korean_words(
         df["comment"]
@@ -422,10 +381,7 @@ ax2.set_title(
 
         word_df = pd.DataFrame(
             top_words,
-            columns=[
-                "단어",
-                "빈도"
-            ]
+            columns=["단어", "빈도"]
         )
 
         st.dataframe(
@@ -443,9 +399,7 @@ ax2.set_title(
     # 원본 댓글
     # =====================
 
-    with st.expander(
-        "댓글 원본 보기"
-    ):
+    with st.expander("댓글 원본 보기"):
 
         st.dataframe(
             df,
