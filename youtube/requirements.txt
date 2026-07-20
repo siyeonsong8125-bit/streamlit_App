@@ -3,6 +3,5 @@ google-api-python-client
 pandas
 matplotlib
 wordcloud
-konlpy
 numpy
 textblob
