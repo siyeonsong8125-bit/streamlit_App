@@ -1,6 +1,9 @@
 import streamlit as st
 import pandas as pd
 import time
+import random
+import matplotlib.pyplot as plt
+from datetime import date
 
 st.set_page_config(
     page_title="📚 Study Mate",
@@ -152,7 +155,6 @@ quotes = [
     "천천히 가도 멈추지만 않으면 된다."
 ]
 
-import random
 
 st.header("💡 오늘의 명언")
 
@@ -187,7 +189,6 @@ st.success(
     f"🔥 연속 공부 일수 : "
     f"{st.session_state.attendance}일"
 )
-from datetime import date
 
 # =========================
 # 시험 D-Day
@@ -209,7 +210,6 @@ elif days_left == 0:
     st.success("오늘이 시험날입니다!")
 else:
     st.warning("시험이 지났습니다.")
-  import matplotlib.pyplot as plt
 # =========================
 # 공부 통계
 # =========================
